@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 660 490" fill="none" role="img" aria-labelledby="titulo">
+<title id="titulo">Personas diversas colaborando con una computadora</title>
+<defs>
+  <linearGradient id="fondo" x1="70" y1="90" x2="600" y2="440" gradientUnits="userSpaceOnUse"><stop stop-color="#e1f5f2"/><stop offset="1" stop-color="#c4e9e5"/></linearGradient>
+  <linearGradient id="camisa" x1="120" y1="160" x2="210" y2="330"><stop stop-color="#e9f3de"/><stop offset="1" stop-color="#a5cfaa"/></linearGradient>
+  <linearGradient id="tablet" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#193c55"/><stop offset="1" stop-color="#31546d"/></linearGradient>
+  <filter id="sombra" x="-25%" y="-25%" width="150%" height="150%"><feDropShadow dx="0" dy="12" stdDeviation="12" flood-color="#13495b" flood-opacity=".14"/></filter>
+</defs>
+<!-- Formas decorativas del fondo -->
+<path d="M102 164C135 76 248 41 337 71s136 3 201 23c65 20 105 104 92 174-13 70-69 139-157 159-92 21-151-4-241 0S55 352 66 279c4-38 23-78 36-115Z" fill="url(#fondo)"/>
+<path d="M443 67c64-50 138-30 169 14 36 53 24 107-12 145-20 20-56 31-86 24-72-19-116-131-71-183Z" fill="#a5d6d1"/>
+<path d="M523 286c56-43 117-21 131 29 12 44-10 91-53 105-48 15-126-14-117-73 4-26 21-45 39-61Z" fill="#f8d8e5"/>
+<path d="M98 315c-43-60-78-33-81 18-4 57 36 88 84 83 37-5 54-50 34-75-9-11-24-10-37-26Z" fill="#c4ece8"/>
+<path d="M592 178c-8-20 8-50 19-55M605 170c5-14 20-19 29-18" stroke="#08a3ad" stroke-width="4" stroke-linecap="round"/>
+<path d="M75 160c-8-18-3-41 7-50M87 166c14-8 19-21 18-29" stroke="#ebad61" stroke-width="4" stroke-linecap="round"/>
+<!-- plantas -->
+<path d="M83 428V280m0 73c-35-16-31-51-55-61 1 35 22 61 55 61Zm0 15c32-18 38-48 44-67-35 0-55 29-44 67Z" fill="#4f9b86"/>
+<path d="M84 430V310" stroke="#36766c" stroke-width="5" stroke-linecap="round"/>
+<path d="M559 430V288m0 60c-21-29-46-35-59-38 10 29 26 50 59 38Zm0 28c31-17 47-37 47-66-34 13-52 32-47 66Z" fill="#71b796"/>
+<path d="M559 433V300" stroke="#36766c" stroke-width="5" stroke-linecap="round"/>
+<!-- Persona izquierda atrás -->
+<path d="M117 247c0-55 15-80 54-93l55 16c35 20 45 58 42 112l-100 59-51-94Z" fill="url(#camisa)" stroke="#74ad97" stroke-width="2"/>
+<path d="M161 178l-6-36 53-8-2 44-18 26-27-26Z" fill="#dbab88"/>
+<ellipse cx="181" cy="110" rx="42" ry="54" fill="#dba581"/>
+<path d="M144 115c-17-25-13-74 23-85 24-8 50 5 59 27 9 20 2 38-4 42-4-25-21-28-32-43-9 18-24 20-46 24Z" fill="#2c2c31"/>
+<path d="M148 73c-10-13 0-30 14-31 7-17 32-16 39 0 18-7 37 12 29 28" stroke="#2c2c31" stroke-width="17" stroke-linecap="round"/>
+<path d="M156 120c9 5 18 5 26 0m13 0c8 4 18 4 24-1" stroke="#253c47" stroke-width="3" stroke-linecap="round"/>
+<path d="M176 142c9 8 18 7 26-1" stroke="#995b55" stroke-width="3" stroke-linecap="round"/>
+<path d="M222 207c29 21 38 60 57 80l-34 19c-30-19-37-52-52-63" stroke="#d5a080" stroke-width="21" stroke-linecap="round"/>
+<!-- Persona del centro, en silla de ruedas -->
+<path d="M202 285c-1-68 29-112 81-115 53-3 96 37 100 121l-25 93H225l-23-99Z" fill="#178b79"/>
+<path d="M268 170l-4-39 55-1-5 42-24 20-22-22Z" fill="#be8765"/>
+<ellipse cx="290" cy="117" rx="45" ry="53" fill="#ce9976"/>
+<path d="M245 114c-11-35 10-65 36-70 30-12 62 8 61 35 18 47-3 80-14 89-11-28-10-58-10-79-20 12-43 12-73 25Z" fill="#2f2930"/>
+<path d="M256 101c-18 51-14 105 0 117" stroke="#2f2930" stroke-width="15" stroke-linecap="round"/>
+<circle cx="277" cy="117" r="3" fill="#253344"/><circle cx="304" cy="117" r="3" fill="#253344"/>
+<path d="M280 142c8 6 18 6 25 0" stroke="#8b4b43" stroke-width="3" stroke-linecap="round"/>
+<path d="M238 260c-11 45-34 69-63 96" stroke="#d19976" stroke-width="24" stroke-linecap="round"/>
+<path d="M335 257c12 35 36 58 66 63" stroke="#d19976" stroke-width="22" stroke-linecap="round"/>
+<!-- Silla de ruedas -->
+<circle cx="197" cy="401" r="63" fill="#f4f8fa" stroke="#264a66" stroke-width="13"/>
+<circle cx="197" cy="401" r="46" stroke="#83b5b9" stroke-width="6"/>
+<circle cx="197" cy="401" r="9" fill="#264a66"/>
+<path d="M197 354v94m-47-47h94m-80-32 66 64m0-64-66 64" stroke="#aacbd0" stroke-width="3"/>
+<path d="M227 337l15 36 71 3 30 50h34" stroke="#264a66" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="377" cy="427" r="15" fill="#f4f8fa" stroke="#264a66" stroke-width="7"/>
+<!-- Persona derecha atrás con tablet -->
+<path d="M388 251c-3-67 28-102 67-111 53-8 91 28 100 91l-14 131-139-12-14-99Z" fill="#397bb3"/>
+<path d="M439 149l-7-39 55-7 4 43-26 26-26-23Z" fill="#88543b"/>
+<ellipse cx="462" cy="100" rx="42" ry="49" fill="#9d6648"/>
+<path d="M422 100c-18-19-9-45 0-54 8-17 22-12 26-28 15 12 30-8 38 7 13-6 22 5 22 16 21 12 13 30 3 40-7-12-18-24-28-27-12 24-40 27-61 46Z" fill="#292630"/>
+<circle cx="440" cy="50" r="17" fill="#292630"/><circle cx="467" cy="39" r="16" fill="#292630"/><circle cx="488" cy="43" r="15" fill="#292630"/>
+<circle cx="448" cy="104" r="3" fill="#203044"/><circle cx="477" cy="104" r="3" fill="#203044"/>
+<path d="M449 126c11 7 19 6 25-1" stroke="#6f382e" stroke-width="3" stroke-linecap="round"/>
+<rect x="432" y="210" width="90" height="119" rx="12" transform="rotate(8 432 210)" fill="url(#tablet)" stroke="#1c354e" stroke-width="3"/>
+<circle cx="478" cy="270" r="7" fill="#84b4ba"/>
+<path d="M403 218c-13 27-8 65 13 83" stroke="#9d6648" stroke-width="22" stroke-linecap="round"/>
+<path d="M522 224c16 23 19 50 6 71" stroke="#9d6648" stroke-width="22" stroke-linecap="round"/>
+<!-- Persona a la derecha sentada -->
+<path d="M507 314c-10-53 13-94 58-102 50-7 76 29 87 72l-14 147-117-4-14-113Z" fill="#f1ba57"/>
+<path d="M551 217l-4-35 49-6 6 38-26 20-25-17Z" fill="#e5b48c"/>
+<ellipse cx="573" cy="165" rx="43" ry="47" fill="#e1b087"/>
+<path d="M530 153c-1-46 28-64 55-59 38 4 52 30 43 59-12-4-25-20-36-32-18 14-38 18-62 32Z" fill="#372c32"/>
+<rect x="543" y="162" width="24" height="16" rx="6" stroke="#243d49" stroke-width="3"/><rect x="579" y="162" width="24" height="16" rx="6" stroke="#243d49" stroke-width="3"/><path d="M567 167h12" stroke="#243d49" stroke-width="3"/>
+<path d="M561 191c10 7 19 7 27-2" stroke="#975c50" stroke-width="3" stroke-linecap="round"/>
+<path d="M532 306c-29 26-58 22-87 15" stroke="#e1b087" stroke-width="21" stroke-linecap="round"/>
+<!-- Mesa y computadora en primer plano -->
+<g filter="url(#sombra)">
+<path d="M250 292h172l-18 107H268l-18-107Z" fill="#eef6f7" stroke="#acc8ce" stroke-width="3"/>
+<path d="M270 309h138l-14 72H279l-9-72Z" fill="#d5e7eb"/>
+<path d="M328 329c15-15 37 4 17 16-16 8-24-2-17-16Z" fill="#4f9ca4"/>
+<path d="M270 402h173l23 17H256l14-17Z" fill="#c2d8dd"/>
+</g>
+<path d="M87 450c153 7 332 7 530 0" stroke="#6caea7" stroke-width="10" stroke-linecap="round" opacity=".35"/>
+</svg>

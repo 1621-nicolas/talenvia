@@ -1,30 +1,43 @@
 {% extends 'empleo/base.html' %}
 {% block title %}{{ oferta.titulo }} · Talenvía{% endblock %}
 {% block content %}
-<a href="{% url 'ofertas' %}">← Volver a empleos</a>
+<nav aria-label="Volver a las oportunidades"><a class="enlace-flecha" href="{% url 'ofertas' %}">← Volver a empleos</a></nav>
 <article class="detalle">
-  <p class="etiqueta">{{ oferta.empresa.razon_social }}</p>
-  <h1>{{ oferta.titulo }}</h1>
-  <p class="intro">{{ oferta.ubicacion }} · {{ oferta.get_modalidad_display }} · Cierre: {{ oferta.fecha_cierre|date:"d/m/Y" }}</p>
-  <section class="tarjeta"><h2>Descripción del puesto</h2><p class="texto-con-saltos">{{ oferta.descripcion }}</p><h2>Requisitos</h2><p class="texto-con-saltos">{{ oferta.requisitos }}</p></section>
-  <section class="tarjeta"><h2>Apoyos y condiciones de accesibilidad declarados</h2>
-    <ul>{% for apoyo in oferta.apoyos.all %}<li><strong>{{ apoyo.nombre }}:</strong> {{ apoyo.descripcion }}</li>{% empty %}<li>Sin apoyos registrados.</li>{% endfor %}</ul>
-    <p class="ayuda">Esta información es declarada por la empresa y no constituye una certificación.</p>
+  <header class="encabezado-pagina" style="margin-top:1.5rem">
+    <p class="etiqueta">{{ oferta.empresa.razon_social }}</p>
+    <h1>{{ oferta.titulo }}</h1>
+    <p class="intro">{{ oferta.ubicacion }} · {{ oferta.get_modalidad_display }} · Cierre: {{ oferta.fecha_cierre|date:"d/m/Y" }}</p>
+  </header>
+  <section class="tarjeta">
+    <h2>Acerca del puesto</h2><p class="texto-con-saltos">{{ oferta.descripcion }}</p>
+    <h2>Requisitos</h2><p class="texto-con-saltos">{{ oferta.requisitos }}</p>
+  </section>
+  <section class="tarjeta">
+    <p class="etiqueta">INCLUSIÓN LABORAL · ODS 10</p>
+    <h2>Apoyos y condiciones de accesibilidad</h2>
+    <p>La empresa declara los siguientes apoyos para este puesto:</p>
+    <ul class="lista-apoyos-detalle">
+      {% for apoyo in oferta.apoyos.all %}<li><strong>{{ apoyo.nombre }}:</strong> {{ apoyo.descripcion }}</li>
+      {% empty %}<li>No se han especificado apoyos para esta oferta.</li>{% endfor %}
+    </ul>
+    <p class="ayuda">Esta información proviene de la empresa y no constituye una certificación oficial de accesibilidad.</p>
   </section>
   {% if user.is_authenticated and user.rol == 'POSTULANTE' %}
     {% if ya_postulo %}
-      <p class="aviso success">Ya enviaste tu postulación a esta oferta.</p>
+      <p class="aviso success" role="status">Ya enviaste una postulación a esta oferta. Puedes revisarla en <a href="{% url 'mis_postulaciones' %}">tu historial</a>.</p>
     {% else %}
-      <section class="tarjeta"><h2>Enviar mi postulación</h2>
-        <p>Se enviará a <strong>{{ oferta.empresa.razon_social }}</strong> la versión actual de tu CV y tus datos de contacto autorizados. Necesitas completar tu perfil y cargar un CV válido.</p>
-        <form method="post" action="{% url 'postular' oferta.pk %}">{% csrf_token %}
+      <section class="tarjeta" aria-labelledby="postular-titulo">
+        <h2 id="postular-titulo">Enviar mi postulación</h2>
+        <p>Se compartirá con <strong>{{ oferta.empresa.razon_social }}</strong> tu versión actual del CV y los datos de contacto autorizados. Debes tener un perfil completo y un CV válido.</p>
+        <form method="post" action="{% url 'postular' oferta.pk %}" class="formulario">
+          {% csrf_token %}
           <div class="campo campo-check">{{ form.acepto }} <label for="{{ form.acepto.id_for_label }}">{{ form.acepto.label }}</label></div>
           <button class="boton" type="submit">Confirmar postulación</button>
         </form>
       </section>
     {% endif %}
   {% elif not user.is_authenticated %}
-    <p class="tarjeta">Para enviar una postulación, <a href="{% url 'login' %}">ingresa con tu cuenta</a> o <a href="{% url 'registro' %}">regístrate</a>.</p>
+    <p class="tarjeta">Para postular debes <a href="{% url 'login' %}">iniciar sesión</a> o <a href="{% url 'registro' %}">crear una cuenta</a> como postulante.</p>
   {% endif %}
 </article>
 {% endblock %}

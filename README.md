@@ -64,3 +64,29 @@ Ver [Plan inicial de pruebas](docs/PLAN_PRUEBAS.md). El proyecto usa Django, HTM
 ## Alcance del MVP
 
 La selección laboral continúa fuera del portal por correo o teléfono. No incluye chat, entrevistas ni seguimiento de contratación. Las empresas declaran sus propios apoyos; la plataforma no certifica su accesibilidad.
+
+## Diseño visual moderno e inclusivo (Diseño 1)
+
+La interfaz adopta la propuesta **Moderno e Inclusivo**: turquesa, menta, blanco y azul oscuro; hero ilustrado, buscador de empleos, tarjetas con apoyos, formularios consistentes y paneles adaptables. La ilustración SVG original se guarda en `static/img/equipo-inclusivo.svg` y no depende de imágenes externas.
+
+Ver [Guía de identidad visual](docs/IDENTIDAD_VISUAL.md) para componentes, paleta, pautas de accesibilidad y validación pendiente.
+
+### Ver cuatro ofertas ficticias en desarrollo local
+
+Después de `migrate`, ejecuta:
+
+```powershell
+python manage.py sembrar_apoyos
+python manage.py sembrar_demo --confirmar
+python manage.py runserver
+```
+
+**Advertencia:** las ofertas y empresas **DEMO** son ficticias, con correos `.invalid` y no representan vacantes reales. La carga se bloquea si `DJANGO_DEBUG=false`. Las cuentas DEMO no tienen contraseña utilizable. No uses estos datos como evidencia de contratación o impacto social real.
+
+### Validación del rediseño
+
+```powershell
+python manage.py test empleo -v 2
+```
+
+Las pruebas verifican algunas estructuras y flujos; no sustituyen una evaluación manual WCAG 2.2 con NVDA, zoom al 200 % y herramientas de contraste, ni constituyen certificación de conformidad.
