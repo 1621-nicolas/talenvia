@@ -7,6 +7,10 @@ on:
 jobs:
   pruebas:
     runs-on: ubuntu-latest
+    env:
+      # CI en SQLite mantiene la suite reproducible sin exponer SQL Server local.
+      DB_ENGINE: sqlite
+      DJANGO_DEBUG: "true"
     steps:
       - name: Obtener código
         uses: actions/checkout@v4
@@ -19,15 +23,19 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
       - name: Comprobaciones Django
-        env:
-          DJANGO_DEBUG: "true"
         run: |
           python manage.py check
           python manage.py makemigrations --check --dry-run
           python manage.py migrate --noinput
-      - name: Ejecutar pruebas con cobertura
+      - name: Verificar selección del motor SQL Server
         env:
-          DJANGO_DEBUG: "true"
+          DB_ENGINE: sqlserver
+          DB_AUTH: windows
+          DB_HOST: localhost
+          DB_NAME: TalenviaDB
+        run: |
+          python -c "import os; os.environ.setdefault('DJANGO_SETTINGS_MODULE','config.settings'); from django.conf import settings; assert settings.DATABASES['default']['ENGINE'] == 'mssql'; print('Configuración SQL Server disponible (sin prueba de conexión)')"
+      - name: Ejecutar pruebas con cobertura
         run: |
           coverage run --source=empleo manage.py test empleo --verbosity 2
           coverage report -m

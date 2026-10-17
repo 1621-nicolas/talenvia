@@ -2,8 +2,10 @@
 import os
 from pathlib import Path
 from django.core.exceptions import ImproperlyConfigured
+from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(BASE_DIR / ".env")
 DEBUG = os.getenv("DJANGO_DEBUG", "true").lower() in ("1", "true", "yes")
 _DEV_SECRET = "django-insecure-talenvia-only-for-local-development"
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", _DEV_SECRET)
@@ -43,7 +45,53 @@ TEMPLATES = [{
 }]
 WSGI_APPLICATION = "config.wsgi.application"
 ASGI_APPLICATION = "config.asgi.application"
-DATABASES = {"default": {"ENGINE": "django.db.backends.sqlite3", "NAME": BASE_DIR / "db.sqlite3"}}
+# SQL Server es la base de datos principal. SQLite solo se usa como respaldo
+# durante pruebas aisladas o para exportar una base local anterior.
+DB_ENGINE = os.getenv("DB_ENGINE", "sqlserver").strip().lower()
+if DB_ENGINE == "sqlite":
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
+elif DB_ENGINE in ("sqlserver", "mssql"):
+    db_auth = os.getenv("DB_AUTH", "windows").strip().lower()
+    if db_auth not in ("windows", "sqlserver"):
+        raise ImproperlyConfigured("DB_AUTH debe ser 'windows' o 'sqlserver'.")
+    extra_params = "Encrypt=yes"
+    trust_cert = os.getenv("DB_TRUST_SERVER_CERTIFICATE", "false").lower() in ("true", "yes", "1")
+    if trust_cert:
+        if not DEBUG:
+            raise ImproperlyConfigured(
+                "DB_TRUST_SERVER_CERTIFICATE=true solo se permite en desarrollo local."
+            )
+        extra_params += ";TrustServerCertificate=yes"
+    else:
+        extra_params += ";TrustServerCertificate=no"
+    db_config = {
+        "ENGINE": "mssql",
+        "NAME": os.getenv("DB_NAME", "TalenviaDB"),
+        "HOST": os.getenv("DB_HOST", "localhost"),
+        "PORT": os.getenv("DB_PORT", ""),
+        "OPTIONS": {
+            "driver": os.getenv("DB_ODBC_DRIVER", "ODBC Driver 18 for SQL Server"),
+            "extra_params": extra_params,
+        },
+        "CONN_MAX_AGE": 0,
+    }
+    if db_auth == "sqlserver":
+        db_user = os.getenv("DB_USER", "").strip()
+        db_password = os.getenv("DB_PASSWORD", "")
+        if not db_user or not db_password:
+            raise ImproperlyConfigured(
+                "Define DB_USER y DB_PASSWORD en tu .env local para autenticación SQL Server."
+            )
+        db_config.update({"USER": db_user, "PASSWORD": db_password})
+    # Con DB_AUTH=windows, omitir USER/PASSWORD permite Trusted_Connection en Windows.
+    DATABASES = {"default": db_config}
+else:
+    raise ImproperlyConfigured("DB_ENGINE debe ser 'sqlserver' o 'sqlite'.")
 AUTH_USER_MODEL = "empleo.Usuario"
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},

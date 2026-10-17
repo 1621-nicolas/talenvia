@@ -18,7 +18,7 @@ Proyecto académico **Calidad y Pruebas de Software** (UPN, 2026-2). Talenvía c
 
 ## Ejecutar en Windows PowerShell
 
-Requiere Python 3.12+ (versión compatible con Django 5.2).
+Requiere Python 3.12+ (versión compatible con Django 5.2), Microsoft SQL Server y ODBC Driver 18. **Antes de ejecutar `migrate`, sigue la [guía de migración SQL Server](docs/MIGRACION_SQLSERVER.md)**: crea la base `TalenviaDB` en SSMS y configura `.env`. `mssql-django` permite autenticación integrada de Windows o credenciales SQL locales sin subir contraseñas a GitHub.
 
 ```powershell
 git clone https://github.com/1621-nicolas/talenvia.git
@@ -26,6 +26,8 @@ cd talenvia
 py -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
+Copy-Item .env.example .env
+# Edita .env según la guía de SQL Server antes de continuar.
 python manage.py migrate
 python manage.py sembrar_apoyos
 python manage.py createsuperuser
@@ -59,7 +61,7 @@ python manage.py makemigrations --check --dry-run
 
 ## Documentación de calidad
 
-Ver [Plan inicial de pruebas](docs/PLAN_PRUEBAS.md). El proyecto usa Django, HTML, CSS y SQLite según las prácticas de campo 01 y 02, con el diseño preparado para pruebas unitarias, funcionales, de rendimiento, seguridad y accesibilidad.
+Ver [Plan inicial de pruebas](docs/PLAN_PRUEBAS.md). El proyecto usa Django, HTML, CSS y SQL Server (SQLite como respaldo de pruebas), con el diseño preparado para pruebas unitarias, funcionales, de rendimiento, seguridad y accesibilidad.
 
 ## Alcance del MVP
 
@@ -90,3 +92,9 @@ python manage.py test empleo -v 2
 ```
 
 Las pruebas verifican algunas estructuras y flujos; no sustituyen una evaluación manual WCAG 2.2 con NVDA, zoom al 200 % y herramientas de contraste, ni constituyen certificación de conformidad.
+
+## Base de datos principal: SQL Server
+
+Talenvía utiliza `mssql-django` y `python-dotenv` para conectarse por defecto a `TalenviaDB` en `localhost`. Las credenciales y opciones TLS van en el archivo local `.env` excluido de Git. Consulta la [guía completa de configuración, migración y conservación de datos](docs/MIGRACION_SQLSERVER.md).
+
+**Nota sobre las pruebas:** GitHub Actions sigue ejecutando pruebas automáticas sobre SQLite y valida la configuración de `mssql` sin conectar al SQL Server de tu computadora. La integración real con SQL Server está pendiente hasta que se ejecuten las migraciones y pruebas locales.
