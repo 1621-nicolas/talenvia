@@ -37,3 +37,12 @@
 - Preparación del paper y evidencia de contribución al ODS 10.
 
 **Importante:** una prueba escrita o integrada en CI no equivale a un resultado aprobado hasta verificar su ejecución. No declarar certificación WCAG.
+
+
+## Actualización ODS 10: integridad y protección de CV (migración 0002)
+
+Se agregan casos automatizados para cambio de rol con perfil, rechazo de perfil con rol incompatible, RUC duplicado, varias empresas incompletas sin RUC, accesibilidad por oferta, CV ajeno, postulación sin consentimiento, registro de versión/fecha de consentimiento e índices planificados.
+
+Las relaciones entre postulante y CV se comprueban mediante el servicio y validación de modelo; las restricciones cruzando tablas no son CHECK simples de SQL Server. Se deben probar también actualizaciones SQL directas y permisos mínimos como tareas futuras.
+
+**Evidencia pendiente:** validar \`migrate\` real en una base SQL Server con respaldo y ejecutar las pruebas sobre una base de ensayo SQL Server. Las pruebas SQLite no garantizan por sí solas que las restricciones filtradas se creen en SQL Server.

@@ -42,9 +42,19 @@ class Usuario(AbstractUser):
     REQUIRED_FIELDS = []
     objects = UsuarioManager()
 
+    def clean(self):
+        super().clean()
+        if self.pk:
+            from django.core.exceptions import ValidationError
+            if self.rol != self.Rol.POSTULANTE and Postulante.objects.filter(usuario_id=self.pk).exists():
+                raise ValidationError({"rol": "No puedes cambiar de rol una cuenta con perfil postulante."})
+            if self.rol != self.Rol.EMPRESA and Empresa.objects.filter(usuario_id=self.pk).exists():
+                raise ValidationError({"rol": "No puedes cambiar de rol una cuenta con perfil empresa."})
+
     def save(self, *args, **kwargs):
         if self.email:
             self.email = self.email.strip().casefold()
+        self.clean()
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -73,6 +83,16 @@ class Postulante(models.Model):
     habilidades = models.TextField(blank=True)
     apoyos_preferidos = models.ManyToManyField(Apoyo, blank=True, related_name="postulantes")
 
+    def clean(self):
+        super().clean()
+        if self.usuario_id and self.usuario.rol != Usuario.Rol.POSTULANTE:
+            from django.core.exceptions import ValidationError
+            raise ValidationError({"usuario": "Un perfil postulante requiere un usuario POSTULANTE."})
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
+
     @property
     def completo(self):
         return bool(self.nombres.strip() and self.ubicacion.strip())
@@ -89,14 +109,25 @@ class Empresa(models.Model):
 
     usuario = models.OneToOneField(Usuario, on_delete=models.PROTECT, related_name="perfil_empresa")
     razon_social = models.CharField(max_length=180, blank=True)
-    ruc = models.CharField(max_length=11, blank=True, validators=[RegexValidator(r"^\d{11}$", "El RUC debe tener 11 dígitos.")])
+    ruc = models.CharField(max_length=11, blank=True, null=True, unique=True, validators=[RegexValidator(r"^\d{11}$", "El RUC debe tener 11 dígitos.")])
     ubicacion = models.CharField(max_length=160, blank=True)
     correo_contacto = models.EmailField(blank=True)
     estado = models.CharField(max_length=12, choices=Estado.choices, default=Estado.PENDIENTE)
 
+    def clean(self):
+        super().clean()
+        if self.usuario_id and self.usuario.rol != Usuario.Rol.EMPRESA:
+            from django.core.exceptions import ValidationError
+            raise ValidationError({"usuario": "Un perfil empresa requiere un usuario EMPRESA."})
+        self.ruc = (self.ruc or "").strip() or None
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
+
     @property
     def completo(self):
-        return bool(self.razon_social.strip() and self.ruc.isdigit() and len(self.ruc) == 11 and self.ubicacion.strip() and self.correo_contacto.strip())
+        return bool(self.razon_social.strip() and self.ruc and self.ruc.isdigit() and len(self.ruc) == 11 and self.ubicacion.strip() and self.correo_contacto.strip())
 
     @property
     def habilitada(self):
@@ -119,6 +150,7 @@ class OfertaLaboral(models.Model):
     empresa = models.ForeignKey(Empresa, on_delete=models.PROTECT, related_name="ofertas")
     titulo = models.CharField(max_length=160)
     descripcion = models.TextField()
+    detalle_accesibilidad = models.TextField(blank=True, default="", help_text="Describe cómo se proporcionan los apoyos en esta vacante.")
     requisitos = models.TextField()
     ubicacion = models.CharField(max_length=160)
     modalidad = models.CharField(max_length=12, choices=Modalidad.choices)
@@ -129,6 +161,10 @@ class OfertaLaboral(models.Model):
 
     class Meta:
         ordering = ["-publicada_en"]
+        indexes = [
+            models.Index(fields=["estado", "fecha_cierre"], name="idx_oferta_estado_fecha"),
+            models.Index(fields=["empresa", "estado"], name="idx_oferta_empresa_estado"),
+        ]
 
     @classmethod
     def disponibles(cls):
@@ -174,6 +210,8 @@ class Postulacion(models.Model):
     curriculum = models.ForeignKey(Curriculum, on_delete=models.PROTECT, related_name="postulaciones")
     fecha = models.DateTimeField(default=timezone.now)
     consentimiento = models.BooleanField(default=True)
+    consentimiento_fecha = models.DateTimeField(null=True, blank=True)
+    consentimiento_version = models.CharField(max_length=40, blank=True, default="")
     correo_contacto = models.EmailField()
     telefono_contacto = models.CharField(max_length=30, blank=True)
 
@@ -182,6 +220,21 @@ class Postulacion(models.Model):
         constraints = [
             models.UniqueConstraint(fields=["postulante", "oferta"], name="unica_postulacion_por_oferta"),
         ]
+        indexes = [
+            models.Index(fields=["oferta", "-fecha"], name="idx_postulacion_oferta_fecha"),
+        ]
+
+    def clean(self):
+        super().clean()
+        from django.core.exceptions import ValidationError
+        if self.postulante_id and self.curriculum_id and self.curriculum.postulante_id != self.postulante_id:
+            raise ValidationError({"curriculum": "El CV debe pertenecer al postulante de esta solicitud."})
+        if not self.consentimiento:
+            raise ValidationError({"consentimiento": "Es obligatorio autorizar expresamente esta postulación."})
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.postulante} → {self.oferta}"

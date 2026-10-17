@@ -1,7 +1,10 @@
 """Operaciones de negocio y reglas de seguridad comprobables mediante pruebas."""
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
+from django.utils import timezone
 from .models import Curriculum, Empresa, Postulacion
+
+CONSENTIMIENTO_VERSION = "talenvia-cv-v1"
 
 
 def registrar_perfil(usuario):
@@ -33,7 +36,9 @@ def enviar_postulacion(postulante, oferta, *, consentimiento):
                 raise ValidationError("Ya te postulaste a esta oferta.")
             return Postulacion.objects.create(
                 postulante=postulante, oferta=oferta_actual, curriculum=cv,
-                consentimiento=True, correo_contacto=postulante.usuario.email,
+                consentimiento=True, consentimiento_fecha=timezone.now(),
+                consentimiento_version=CONSENTIMIENTO_VERSION,
+                correo_contacto=postulante.usuario.email,
                 telefono_contacto=postulante.telefono,
             )
     except IntegrityError as exc:
@@ -48,6 +53,6 @@ def puede_descargar_cv(usuario, cv):
     if usuario.rol == usuario.Rol.EMPRESA:
         return (
             Empresa.objects.filter(usuario=usuario, estado=Empresa.Estado.APROBADA).exists()
-            and Postulacion.objects.filter(curriculum=cv, oferta__empresa__usuario=usuario).exists()
+            and Postulacion.objects.filter(curriculum=cv, postulante_id=cv.postulante_id, oferta__empresa__usuario=usuario).exists()
         )
     return False

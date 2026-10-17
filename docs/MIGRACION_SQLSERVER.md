@@ -159,3 +159,83 @@ Conserva también `private_uploads/` en la misma ruta si existen CV: el JSON exp
 - **No declarar** la migración de datos o la integración SQL Server como verificada hasta que se ejecute el paso 5 y se comprueben resultados reales.
 
 Fuentes de referencia: [Microsoft mssql-django](https://github.com/microsoft/mssql-django), [configuración de conexión](https://learn.microsoft.com/en-us/sql/connect/python/mssql-django/connection-options).
+
+
+## 8. Endurecimiento ODS 10 — migración 0002
+
+La migración \`empleo/migrations/0002_integridad_ods10.py\` incorpora:
+
+- Verificación de perfiles pertenecientes al rol correcto, duplicados de RUC y CV de postulaciones inconsistentes.
+- Unicidad de RUC no vacío mediante \`unique=True\` y \`null=True\`: se normalizan los RUC en blanco como \`NULL\` para permitir empresas pendientes. Antes se revisan duplicados y valores inválidos.
+- Campo opcional \`detalle_accesibilidad\` para explicar la aplicación de los apoyos de cada oferta, sin pedir diagnósticos.
+- \`consentimiento_fecha\` y \`consentimiento_version\` en las postulaciones.
+- Índices adicionales para estado y fecha de ofertas, empresa y estado, y candidaturas por oferta y fecha.
+
+**Preservación de datos:** la migración no elimina usuarios, empresas, ofertas ni CV. Solo convierte RUC vacíos/espacios en \`NULL\`. Si identifica perfiles con roles incorrectos, RUC repetidos/invalidos o una postulación cuyo CV no corresponde, detiene la migración. Debes resolver los datos manualmente tras realizar un respaldo.
+
+Los consentimientos antiguos se marcan \`historico-sin-evidencia\` con fecha nula. Esa etiqueta NO equivale a una aceptación nueva ni atribuye consentimiento no probado.
+
+### Copia de seguridad en SQL Server
+
+En SSMS, ejecuta antes de \`migrate\` (ajusta el directorio a una ruta donde SQL Server tenga permisos):
+
+\`\`\`sql
+BACKUP DATABASE TalenviaDB
+TO DISK = N'C:\SQLBackups\TalenviaDB_pre_0002.bak'
+WITH INIT, CHECKSUM;
+GO
+\`\`\`
+
+Debes comprobar que el servidor tenga acceso a la carpeta y que el archivo se haya creado. No ejecutes el backup sobre otro servidor o una ruta no accesible. Los archivos PDF privados también necesitan su copia independiente.
+
+### Consultas de diagnóstico previas
+
+\`\`\`sql
+USE TalenviaDB;
+GO
+SELECT LTRIM(RTRIM(ruc)) AS ruc, COUNT(*) AS empresas
+FROM empleo_empresa
+WHERE NULLIF(LTRIM(RTRIM(ruc)), '') IS NOT NULL
+GROUP BY LTRIM(RTRIM(ruc))
+HAVING COUNT(*) > 1;
+GO
+SELECT p.id, u.rol
+FROM empleo_postulante p
+JOIN empleo_usuario u ON u.id = p.usuario_id
+WHERE u.rol <> 'POSTULANTE';
+GO
+SELECT e.id, u.rol
+FROM empleo_empresa e
+JOIN empleo_usuario u ON u.id = e.usuario_id
+WHERE u.rol <> 'EMPRESA';
+GO
+SELECT po.id, po.postulante_id, cv.postulante_id AS titular_cv
+FROM empleo_postulacion po
+JOIN empleo_curriculum cv ON cv.id = po.curriculum_id
+WHERE cv.postulante_id <> po.postulante_id;
+GO
+\`\`\`
+
+**Si ves resultados en esas consultas, no ignores las advertencias.** Conserva el respaldo y corrige los datos caso por caso.
+
+### Aplicación controlada
+
+\`\`\`powershell
+git pull origin main
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe manage.py showmigrations empleo
+.\.venv\Scripts\python.exe manage.py migrate --plan
+.\.venv\Scripts\python.exe manage.py migrate
+.\.venv\Scripts\python.exe manage.py check
+\`\`\`
+
+En SSMS comprueba los campos y los índices. Verifica que la restricción de RUC exista en el SQL Server real: los índices filtrados y constraints son un área con limitaciones declaradas por \`mssql-django\`, así que **no consideramos completada la prueba de integración hasta ejecutarla localmente**.
+
+### Pruebas específicas
+
+\`\`\`powershell
+.\.venv\Scripts\python.exe manage.py test empleo.tests_integridad_ods10 -v 2
+.\.venv\Scripts\python.exe manage.py test empleo -v 2
+\`\`\`
+
+El test sobre SQL Server debe utilizar una base temporal de pruebas para evitar alterar los registros reales. Asegúrate de que el usuario SQL tenga los permisos necesarios sobre esa base. GitHub Actions continúa usando SQLite para pruebas automáticas remotas.

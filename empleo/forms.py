@@ -51,10 +51,10 @@ class PerfilEmpresaForm(forms.ModelForm):
         labels = {"razon_social": "Razón social", "ruc": "RUC (11 dígitos)", "ubicacion": "Ubicación", "correo_contacto": "Correo de contacto"}
 
     def clean_ruc(self):
-        valor = self.cleaned_data.get("ruc", "").strip()
+        valor = (self.cleaned_data.get("ruc") or "").strip()
         if valor and (len(valor) != 11 or not valor.isdigit()):
             raise ValidationError("El RUC debe contener exactamente 11 dígitos.")
-        return valor
+        return valor or None
 
 
 class OfertaForm(forms.ModelForm):
@@ -65,9 +65,9 @@ class OfertaForm(forms.ModelForm):
 
     class Meta:
         model = OfertaLaboral
-        fields = ("titulo", "descripcion", "requisitos", "ubicacion", "modalidad", "fecha_cierre", "apoyos")
-        labels = {"titulo": "Título del puesto", "descripcion": "Descripción y apoyos concretos", "requisitos": "Requisitos", "ubicacion": "Ubicación", "modalidad": "Modalidad", "fecha_cierre": "Fecha de cierre"}
-        widgets = {"fecha_cierre": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"), "descripcion": forms.Textarea(attrs={"rows": 4}), "requisitos": forms.Textarea(attrs={"rows": 3})}
+        fields = ("titulo", "descripcion", "requisitos", "ubicacion", "modalidad", "fecha_cierre", "apoyos", "detalle_accesibilidad")
+        labels = {"titulo": "Título del puesto", "descripcion": "Descripción del puesto", "detalle_accesibilidad": "Cómo se ofrecen los apoyos en este puesto (opcional)", "requisitos": "Requisitos", "ubicacion": "Ubicación", "modalidad": "Modalidad", "fecha_cierre": "Fecha de cierre"}
+        widgets = {"fecha_cierre": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"), "descripcion": forms.Textarea(attrs={"rows": 4}), "requisitos": forms.Textarea(attrs={"rows": 3}), "detalle_accesibilidad": forms.Textarea(attrs={"rows": 4})}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -102,6 +102,6 @@ class CurriculumForm(forms.Form):
 class ConsentimientoForm(forms.Form):
     acepto = forms.BooleanField(
         required=True,
-        label="Autorizo compartir esta versión de mi CV y mis datos de contacto con la empresa indicada.",
+        label="Autorizo compartir la versión actual de mi CV, mi correo y mi teléfono (si lo proporcioné) con esta empresa, solo para esta postulación.",
         error_messages={"required": "Debes autorizar el envío de tus datos antes de postular."},
     )
