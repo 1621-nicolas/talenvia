@@ -1,0 +1,39 @@
+name: Calidad Django
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  pruebas:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Obtener código
+        uses: actions/checkout@v4
+      - name: Preparar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Comprobaciones Django
+        env:
+          DJANGO_DEBUG: "true"
+        run: |
+          python manage.py check
+          python manage.py makemigrations --check --dry-run
+          python manage.py migrate --noinput
+      - name: Ejecutar pruebas con cobertura
+        env:
+          DJANGO_DEBUG: "true"
+        run: |
+          coverage run --source=empleo manage.py test empleo --verbosity 2
+          coverage report -m
+          coverage xml -o coverage.xml
+      - name: Conservar evidencia de cobertura
+        uses: actions/upload-artifact@v4
+        with:
+          name: cobertura-talenvia
+          path: coverage.xml

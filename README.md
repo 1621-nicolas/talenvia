@@ -1,21 +1,66 @@
-# Talenvía — Empleo inclusivo · ODS 10
+# Talenvía — Portal de empleo inclusivo · ODS 10
 
-Talenvía es un proyecto académico del curso **Calidad y Pruebas de Software** (UPN, 2026-2). Su objetivo es facilitar el acceso equitativo a oportunidades laborales para personas con discapacidad.
+Proyecto académico **Calidad y Pruebas de Software** (UPN, 2026-2). Talenvía conecta personas con discapacidad y empresas mediante ofertas laborales que informan sus condiciones de accesibilidad. Contribuye al **ODS 10: Reducción de las desigualdades**, metas 10.2 y 10.3.
 
-El producto se construye con **Python, Django, plantillas HTML y SQLite**, conforme a las prácticas de campo 01 y 02.
+**Estado: primera implementación del prototipo.** No se deben publicar CV ni datos personales reales en el repositorio. Las métricas y comprobaciones WCAG son objetivos hasta que se ejecuten y documenten.
 
-> **Estado:** implementación inicial en desarrollo. Los resultados de pruebas y métricas se publicarán únicamente cuando se ejecuten y verifiquen.
+## Funcionalidades de la primera versión
 
-## Principios del proyecto
-- Alineación con el **ODS 10: Reducción de las desigualdades**, especialmente las metas 10.2 y 10.3.
-- Accesibilidad desde el diseño (WCAG 2.2 como referencia), navegación por teclado y formularios claros.
-- No se solicita diagnóstico médico ni certificado de discapacidad.
-- Las preferencias de apoyo de los postulantes son privadas y opcionales.
-- Los CV y los datos personales cuentan con acceso restringido.
-- Roles diferenciados: POSTULANTE, EMPRESA y ADMINISTRADOR.
+- Registro e inicio de sesión por correo; roles Postulante / Empresa / Administrador.
+- Perfiles profesionales y empresariales; apoyos opcionales y privados.
+- Aprobación administrativa de empresas y catálogo de apoyos.
+- Ofertas con requisitos, modalidad, ubicación, fecha y apoyos declarados.
+- Filtros de búsqueda, paginación de 10 ofertas.
+- CV PDF privado, máximo 5 000 000 bytes, preservación de versiones.
+- Postulación con consentimiento expreso y prevención de duplicados.
+- Historial privado del postulante y candidatos visibles solo para la empresa destinataria.
+- Primeras pruebas automatizadas Django y pipeline de GitHub Actions.
 
-## Instalación y ejecución
-La estructura Django, las pruebas, y las instrucciones de arranque se incorporarán a continuación en este repositorio.
+## Ejecutar en Windows PowerShell
 
-## Alcance
-Una empresa aprobada publica ofertas accesibles; una persona postulante consulta apoyos, carga un CV privado y se postula. La empresa obtiene la versión autorizada del CV y contacta externamente por correo o teléfono. No hay seguimiento de entrevistas ni contrataciones dentro del portal.
+Requiere Python 3.12+ (versión compatible con Django 5.2).
+
+```powershell
+git clone https://github.com/1621-nicolas/talenvia.git
+cd talenvia
+py -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+python manage.py migrate
+python manage.py sembrar_apoyos
+python manage.py createsuperuser
+python manage.py runserver
+```
+
+Abrir **http://127.0.0.1:8000/**. El panel administrativo está en **http://127.0.0.1:8000/administracion/**.
+
+> En el administrador, completa una empresa y usa la acción «Aprobar empresas con datos completos». El registro público no permite crear administradores.
+
+Si PowerShell no permite activar entornos virtuales, ejecuta el intérprete directamente, por ejemplo: `.\.venv\Scripts\python.exe manage.py runserver`.
+
+## Ejecutar las pruebas
+
+```powershell
+python manage.py check
+python manage.py test empleo -v 2
+coverage run --source=empleo manage.py test empleo
+coverage report -m
+python manage.py makemigrations --check --dry-run
+```
+
+## Seguridad y privacidad
+
+- No se solicitan diagnósticos médicos ni certificados de discapacidad.
+- Los CV se guardan en `private_uploads/`, excluido de Git, y se entregan únicamente por una vista que verifica permisos.
+- Un administrador no obtiene acceso rutinario a los CV por su rol.
+- Una empresa no puede descargar CV de postulaciones de otra empresa.
+- El correo se normaliza, las contraseñas se protegen con hashing de Django y no existen contraseñas de demostración preestablecidas.
+- El servidor de desarrollo es **solo local**. Antes de publicar en Internet, configurar una clave `DJANGO_SECRET_KEY` segura, `DJANGO_DEBUG=false`, dominios, HTTPS, cabeceras de seguridad y almacenamiento privado persistente.
+
+## Documentación de calidad
+
+Ver [Plan inicial de pruebas](docs/PLAN_PRUEBAS.md). El proyecto usa Django, HTML, CSS y SQLite según las prácticas de campo 01 y 02, con el diseño preparado para pruebas unitarias, funcionales, de rendimiento, seguridad y accesibilidad.
+
+## Alcance del MVP
+
+La selección laboral continúa fuera del portal por correo o teléfono. No incluye chat, entrevistas ni seguimiento de contratación. Las empresas declaran sus propios apoyos; la plataforma no certifica su accesibilidad.

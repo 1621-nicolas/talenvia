@@ -1,0 +1,22 @@
+{% extends 'empleo/base.html' %}
+{% block title %}{{ titulo }} · Talenvía{% endblock %}
+{% block content %}
+<section class="ancho-formulario">
+  <p class="etiqueta">Talenvía · Accesibilidad desde el diseño</p>
+  <h1>{{ titulo }}</h1>
+  {% if texto %}<p class="intro">{{ texto }}</p>{% endif %}
+  <form method="post" class="tarjeta formulario" novalidate>
+    {% csrf_token %}
+    {% if form.non_field_errors %}<div class="errores" role="alert" tabindex="-1">{{ form.non_field_errors }}</div>{% endif %}
+    {% for field in form %}
+      <div class="campo">
+        <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} <span class="requerido">(obligatorio)</span>{% endif %}</label>
+        {{ field }}
+        {% if field.help_text %}<div class="ayuda" id="ayuda-{{ field.html_name }}">{{ field.help_text|safe }}</div>{% endif %}
+        {% if field.errors %}<div class="errores" role="alert">{{ field.errors }}</div>{% endif %}
+      </div>
+    {% endfor %}
+    <button class="boton" type="submit">{{ boton|default:'Guardar' }}</button>
+  </form>
+</section>
+{% endblock %}

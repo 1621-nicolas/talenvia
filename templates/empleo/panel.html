@@ -1,0 +1,23 @@
+{% extends 'empleo/base.html' %}
+{% block title %}Mi panel · Talenvía{% endblock %}
+{% block content %}
+<h1>Mi panel de Talenvía</h1>
+<p class="intro">Hola, {{ user.email }}. Estas son las funciones disponibles para tu rol.</p>
+{% if tipo == 'postulante' %}
+  <div class="cuadricula">
+    <section class="tarjeta"><h2>Perfil profesional</h2><p>{% if perfil.completo %}Datos principales completos.{% else %}Completa nombres y ubicación antes de postular.{% endif %}</p><a class="boton" href="{% url 'perfil_postulante' %}">Editar perfil</a></section>
+    <section class="tarjeta"><h2>Mi currículum</h2><p>Guarda una versión PDF privada de hasta 5 MB.</p><a class="boton" href="{% url 'cargar_cv' %}">Gestionar CV</a></section>
+    <section class="tarjeta"><h2>Ofertas laborales</h2><p>Filtra oportunidades según modalidad y apoyos.</p><a class="boton" href="{% url 'ofertas' %}">Buscar empleo</a></section>
+    <section class="tarjeta"><h2>Mis postulaciones</h2><p>Consulta los envíos ya confirmados.</p><a class="boton" href="{% url 'mis_postulaciones' %}">Ver historial</a></section>
+  </div>
+{% elif tipo == 'empresa' %}
+  <div class="tarjeta">
+    <h2>Estado de la empresa: {{ perfil.get_estado_display }}</h2>
+    {% if not perfil.habilitada %}<p>Para publicar y revisar candidatos necesitas completar los datos y recibir la aprobación del administrador.</p>{% endif %}
+  </div>
+  <div class="cuadricula">
+    <section class="tarjeta"><h2>Datos empresariales</h2><p>Actualiza los datos necesarios para revisión administrativa.</p><a class="boton" href="{% url 'perfil_empresa' %}">Editar empresa</a></section>
+    <section class="tarjeta"><h2>Gestión de ofertas</h2><p>Publica oportunidades accesibles y consulta los candidatos recibidos.</p><a class="boton" href="{% url 'mis_ofertas' %}">Ver mis ofertas</a></section>
+  </div>
+{% endif %}
+{% endblock %}

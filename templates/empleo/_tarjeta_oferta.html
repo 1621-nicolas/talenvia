@@ -1,0 +1,8 @@
+<article class="tarjeta tarjeta-oferta">
+  <p class="etiqueta">{{ oferta.empresa.razon_social }}</p>
+  <h3><a href="{% url 'detalle_oferta' oferta.pk %}">{{ oferta.titulo }}</a></h3>
+  <p class="texto-secundario">{{ oferta.ubicacion }} · {{ oferta.get_modalidad_display }}</p>
+  <p>{{ oferta.descripcion|truncatechars:120 }}</p>
+  <p class="texto-secundario">Apoyos: {% for apoyo in oferta.apoyos.all %}{{ apoyo.nombre }}{% if not forloop.last %}, {% endif %}{% empty %}No especificados{% endfor %}</p>
+  <a href="{% url 'detalle_oferta' oferta.pk %}">Consultar condiciones →</a>
+</article>

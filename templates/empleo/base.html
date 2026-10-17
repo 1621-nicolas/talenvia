@@ -1,0 +1,51 @@
+{% load static %}
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Talenvía: oportunidades laborales con información de accesibilidad para todas las personas.">
+  <title>{% block title %}Talenvía · Empleo inclusivo{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/estilos.css' %}">
+</head>
+<body>
+  <a class="saltar" href="#contenido">Saltar al contenido principal</a>
+  <header class="cabecera">
+    <div class="contenedor barra">
+      <a class="marca" href="{% url 'inicio' %}" aria-label="Talenvía, ir al inicio"><span aria-hidden="true">↗</span> Talenvía</a>
+      <nav aria-label="Navegación principal" class="navegacion">
+        <a href="{% url 'ofertas' %}">Explorar empleos</a>
+        {% if user.is_authenticated %}
+          <a href="{% url 'panel' %}">Mi panel</a>
+          {% if user.rol == 'POSTULANTE' %}
+            <a href="{% url 'perfil_postulante' %}">Mi perfil</a>
+            <a href="{% url 'mis_postulaciones' %}">Mis postulaciones</a>
+          {% elif user.rol == 'EMPRESA' %}
+            <a href="{% url 'mis_ofertas' %}">Mis ofertas</a>
+          {% elif user.is_staff %}
+            <a href="/administracion/">Administración</a>
+          {% endif %}
+          <form method="post" action="{% url 'logout' %}" class="en-linea">{% csrf_token %}<button type="submit" class="enlace-boton">Cerrar sesión</button></form>
+        {% else %}
+          <a href="{% url 'login' %}">Ingresar</a>
+          <a class="boton boton-pequeno" href="{% url 'registro' %}">Crear cuenta</a>
+        {% endif %}
+      </nav>
+    </div>
+  </header>
+  <main id="contenido" class="contenedor principal" tabindex="-1">
+    {% if messages %}
+      <div class="avisos" aria-live="polite">
+        {% for message in messages %}<p class="aviso {% if message.tags %}{{ message.tags }}{% endif %}" role="status">{{ message }}</p>{% endfor %}
+      </div>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="pie">
+    <div class="contenedor">
+      <p><strong>Talenvía</strong> · Empleo inclusivo y ODS 10: reducción de las desigualdades.</p>
+      <p>Las preferencias de apoyo son privadas. No solicitamos diagnósticos médicos.</p>
+    </div>
+  </footer>
+</body>
+</html>
