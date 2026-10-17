@@ -1,0 +1,16 @@
+{% extends 'empleo/base.html' %}
+{% block title %}Mis postulaciones · Talenvía{% endblock %}
+{% block content %}
+<h1>Historial de mis postulaciones</h1>
+<p class="intro">Estas son las solicitudes enviadas. La confirmación de envío no implica contratación ni selección.</p>
+<div class="cuadricula">
+{% for item in postulaciones %}
+  <article class="tarjeta">
+    <h2>{{ item.oferta.titulo }}</h2>
+    <p>Empresa: {{ item.oferta.empresa.razon_social }}</p>
+    <p>Enviado: {{ item.fecha|date:"d/m/Y H:i" }}</p>
+    <a href="{% url 'descargar_cv' item.curriculum.pk %}">Descargar la versión de CV enviada</a>
+  </article>
+{% empty %}<p class="estado-vacio">Aún no has enviado ninguna postulación.</p>{% endfor %}
+</div>
+{% endblock %}

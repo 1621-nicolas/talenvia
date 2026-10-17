@@ -1,0 +1,20 @@
+<article class="tarjeta tarjeta-oferta">
+  <div class="tarjeta-empresa">
+    <span class="avatar-empresa" aria-hidden="true">{{ oferta.empresa.razon_social|first|upper }}</span>
+    <div>
+      <p class="nombre-empresa">{{ oferta.empresa.razon_social }}</p>
+      <h3><a href="{% url 'detalle_oferta' oferta.pk %}">{{ oferta.titulo }}</a></h3>
+    </div>
+  </div>
+  <p class="meta-oferta"><span aria-hidden="true">⌖</span> {{ oferta.ubicacion }} <span aria-hidden="true">·</span> <span aria-hidden="true">▣</span> {{ oferta.get_modalidad_display }}</p>
+  <p class="descripcion-oferta">{{ oferta.descripcion|truncatechars:125 }}</p>
+  <p class="titulo-apoyos">Apoyos disponibles:</p>
+  <ul class="chips-apoyos" aria-label="Apoyos que ofrece la empresa">
+    {% for apoyo in oferta.apoyos.all %}
+      <li>{{ apoyo.nombre }}</li>
+    {% empty %}
+      <li>No especificados</li>
+    {% endfor %}
+  </ul>
+  <a class="tarjeta-enlace" href="{% url 'detalle_oferta' oferta.pk %}">Ver condiciones <span aria-hidden="true">→</span></a>
+</article>

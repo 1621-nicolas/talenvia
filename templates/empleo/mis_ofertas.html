@@ -1,0 +1,18 @@
+{% extends 'empleo/base.html' %}
+{% block title %}Mis ofertas · Talenvía{% endblock %}
+{% block content %}
+<div class="seccion-cabecera"><h1>Ofertas de mi empresa</h1>{% if empresa.habilitada %}<a class="boton" href="{% url 'crear_oferta' %}">Publicar una oferta</a>{% endif %}</div>
+{% if not empresa.habilitada %}<p class="aviso warning">Tu empresa debe completar sus datos y estar aprobada para publicar ofertas y revisar candidatos.</p>{% endif %}
+<div class="cuadricula">
+  {% for oferta in ofertas %}
+    <article class="tarjeta">
+      <h2>{{ oferta.titulo }}</h2><p>Estado: {{ oferta.get_estado_display }} · Fecha de cierre: {{ oferta.fecha_cierre|date:"d/m/Y" }}</p>
+      {% if empresa.habilitada %}<p><a href="{% url 'candidatos' oferta.pk %}">Ver candidatos</a></p>{% endif %}
+      {% if oferta.estado == 'PUBLICADA' and empresa.habilitada %}
+      <p><a href="{% url 'editar_oferta' oferta.pk %}">Editar (solo si no hay postulaciones)</a></p>
+      <form method="post" action="{% url 'cerrar_oferta' oferta.pk %}">{% csrf_token %}<button class="boton secundario" type="submit">Cerrar oferta</button></form>
+      {% endif %}
+    </article>
+  {% empty %}<p class="estado-vacio">Todavía no has publicado ofertas.</p>{% endfor %}
+</div>
+{% endblock %}
