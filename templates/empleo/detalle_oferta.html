@@ -20,6 +20,10 @@
       {% for apoyo in oferta.apoyos.all %}<li><strong>{{ apoyo.nombre }}:</strong> {{ apoyo.descripcion }}</li>
       {% empty %}<li>No se han especificado apoyos para esta oferta.</li>{% endfor %}
     </ul>
+    {% if oferta.detalle_accesibilidad %}
+      <h3>¿Cómo se brindan estos apoyos?</h3>
+      <p class="texto-con-saltos">{{ oferta.detalle_accesibilidad }}</p>
+    {% endif %}
     <p class="ayuda">Esta información proviene de la empresa y no constituye una certificación oficial de accesibilidad.</p>
   </section>
   {% if user.is_authenticated and user.rol == 'POSTULANTE' %}

@@ -105,7 +105,7 @@ class AdminOferta(admin.ModelAdmin):
     list_select_related = ("empresa",)
     filter_horizontal = ("apoyos",)
     actions = ("cerrar",)
-    fields = ("empresa", "titulo", "descripcion", "requisitos", "ubicacion", "modalidad", "fecha_cierre", "apoyos", "estado", "publicada_en")
+    fields = ("empresa", "titulo", "descripcion", "requisitos", "ubicacion", "modalidad", "fecha_cierre", "apoyos", "detalle_accesibilidad", "estado", "publicada_en")
 
     def get_readonly_fields(self, request, obj=None):
         if obj and (obj.estado == OfertaLaboral.Estado.CERRADA or obj.postulaciones.exists()):
