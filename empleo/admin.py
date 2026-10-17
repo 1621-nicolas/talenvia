@@ -1,5 +1,7 @@
 """El administrador modera empresas, ofertas y catálogo; no recibe acceso ordinario a CV."""
+from django import forms
 from django.contrib import admin, messages
+from django.utils import timezone
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
 from .models import Apoyo, Empresa, OfertaLaboral, Postulante, Usuario
@@ -72,13 +74,52 @@ class AdminEmpresa(admin.ModelAdmin):
         self.message_user(request, f"Se suspendieron {total} empresas.", level=messages.WARNING)
 
 
+class AdminOfertaForm(forms.ModelForm):
+    """Al crear ofertas manuales, aplicar las mismas reglas del portal inclusivo."""
+
+    class Meta:
+        model = OfertaLaboral
+        fields = "__all__"
+
+    def clean(self):
+        datos = super().clean()
+        empresa = datos.get("empresa")
+        if empresa is None and self.instance.pk:
+            empresa = self.instance.empresa
+        if empresa is not None and not empresa.habilitada:
+            self.add_error("empresa" if "empresa" in self.fields else None, "La empresa debe estar aprobada, activa y con su perfil completo.")
+        fecha = datos.get("fecha_cierre")
+        if fecha is not None and fecha < timezone.localdate():
+            self.add_error("fecha_cierre", "La fecha de cierre no puede ser anterior a hoy.")
+        if self.instance.pk and (self.instance.postulaciones.exists() or self.instance.estado == OfertaLaboral.Estado.CERRADA):
+            raise forms.ValidationError("No se pueden modificar las condiciones de una oferta cerrada o que ya recibió postulaciones.")
+        return datos
+
+
 @admin.register(OfertaLaboral)
 class AdminOferta(admin.ModelAdmin):
     list_display = ("titulo", "empresa", "modalidad", "fecha_cierre", "estado")
     list_filter = ("estado", "modalidad")
     search_fields = ("titulo", "empresa__razon_social")
-    readonly_fields = ("empresa", "titulo", "descripcion", "requisitos", "ubicacion", "modalidad", "fecha_cierre", "publicada_en", "estado", "apoyos")
+    form = AdminOfertaForm
+    list_select_related = ("empresa",)
+    filter_horizontal = ("apoyos",)
     actions = ("cerrar",)
+    fields = ("empresa", "titulo", "descripcion", "requisitos", "ubicacion", "modalidad", "fecha_cierre", "apoyos", "estado", "publicada_en")
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj and (obj.estado == OfertaLaboral.Estado.CERRADA or obj.postulaciones.exists()):
+            return self.fields
+        if obj:
+            return ("empresa", "publicada_en")
+        return ("publicada_en",)
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "empresa":
+            kwargs["queryset"] = Empresa.objects.filter(
+                estado=Empresa.Estado.APROBADA, usuario__is_active=True,
+            )
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
     @admin.action(description="Cerrar ofertas seleccionadas")
     def cerrar(self, request, queryset):
