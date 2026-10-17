@@ -91,8 +91,14 @@ def ofertas(request):
     if modalidad in OfertaLaboral.Modalidad.values:
         consulta = consulta.filter(modalidad=modalidad)
     ids_validos = {str(pk) for pk in Apoyo.objects.filter(activo=True).values_list("pk", flat=True)}
-    for pk in set(apoyos) & ids_validos:
-        consulta = consulta.filter(apoyos__pk=pk)
+    elegidos = set(apoyos)
+    # Si se recibe un ID inexistente o desactivado, no se ignora silenciosamente.
+    # Ignorarlo mostraría TODAS las ofertas y daría resultados engañosos.
+    if elegidos and not elegidos.issubset(ids_validos):
+        consulta = consulta.none()
+    else:
+        for pk in elegidos:
+            consulta = consulta.filter(apoyos__pk=pk)
     pagina = Paginator(consulta.distinct(), 10).get_page(request.GET.get("pagina"))
     return render(request, "empleo/ofertas.html", {
         "pagina": pagina, "apoyos": Apoyo.objects.filter(activo=True),
