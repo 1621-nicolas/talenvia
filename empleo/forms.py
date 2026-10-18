@@ -15,10 +15,43 @@ class RegistroForm(UserCreationForm):
         label="Tipo de cuenta",
     )
 
+    razon_social = forms.CharField(max_length=180, required=False, label="Razón social",
+                                  widget=forms.TextInput(attrs={"autocomplete": "organization"}))
+    ruc = forms.CharField(max_length=11, required=False, label="RUC de la empresa (11 dígitos)",
+                          widget=forms.TextInput(attrs={"inputmode": "numeric", "pattern": "[0-9]{11}",
+                                                        "maxlength": "11", "autocomplete": "off"}))
+    ubicacion = forms.CharField(max_length=160, required=False, label="Ciudad o ubicación de la empresa")
+    correo_contacto = forms.EmailField(required=False, label="Correo de contacto empresarial",
+                                       widget=forms.EmailInput(attrs={"autocomplete": "email"}))
+
     class Meta:
         model = Usuario
         fields = ("email", "rol")
-        labels = {"email": "Correo electrónico"}
+        labels = {"email": "Correo electrónico de acceso"}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.order_fields(["rol", "email", "razon_social", "ruc", "ubicacion",
+                           "correo_contacto", "password1", "password2"])
+        self.fields["password1"].help_text = "Mínimo 12 caracteres. Evita contraseñas comunes."
+
+    def clean_ruc(self):
+        if self.data.get("rol") != Usuario.Rol.EMPRESA:
+            return None
+        ruc = (self.cleaned_data.get("ruc") or "").strip()
+        if ruc and (len(ruc) != 11 or not ruc.isascii() or not ruc.isdigit()):
+            raise ValidationError("Ingresa un RUC válido de exactamente 11 dígitos.")
+        if ruc and Empresa.objects.filter(ruc=ruc).exists():
+            raise ValidationError("Este RUC ya está registrado.")
+        return ruc or None
+
+    def clean(self):
+        datos = super().clean()
+        if datos.get("rol") == Usuario.Rol.EMPRESA:
+            for campo in ("razon_social", "ruc", "ubicacion", "correo_contacto"):
+                if campo not in self.errors and not datos.get(campo):
+                    self.add_error(campo, "Este dato es obligatorio para registrar una empresa.")
+        return datos
 
     def clean_email(self):
         email = self.cleaned_data["email"].strip().casefold()

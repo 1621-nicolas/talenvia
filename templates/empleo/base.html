@@ -9,6 +9,7 @@
   <title>{% block title %}Talenvía · Oportunidades sin barreras{% endblock %}</title>
   <link rel="icon" type="image/svg+xml" href="{% static 'img/isotipo-talenvia.svg' %}">
   <link rel="stylesheet" href="{% static 'css/estilos.css' %}">
+  <script defer src="{% static 'js/interacciones.js' %}"></script>
 </head>
 <body class="{% block body_class %}{% endblock %}">
   <a class="saltar" href="#contenido">Saltar al contenido principal</a>
@@ -32,7 +33,7 @@
           {% endif %}
           <form method="post" action="{% url 'logout' %}" class="en-linea">{% csrf_token %}<button type="submit" class="boton secundario boton-pequeno">Cerrar sesión</button></form>
         {% else %}
-          <a class="nav-empresa" href="{% url 'registro' %}">Para empresas</a>
+          <a class="nav-empresa" href="{% url 'registro' %}?tipo=empresa">Para empresas</a>
           <a class="boton secundario boton-pequeno" href="{% url 'login' %}">Acceder</a>
           <a class="boton boton-pequeno" href="{% url 'registro' %}">Crear cuenta</a>
         {% endif %}
@@ -48,6 +49,17 @@
         {% endfor %}
       </div>
     {% endif %}
+    {% block navegacion_regreso %}
+      {% if request.path != '/' %}
+      <nav class="volver-navegacion" aria-label="Regresar">
+        {% if user.is_authenticated %}
+          <a class="enlace-volver" href="{% url 'panel' %}"><span aria-hidden="true">←</span> Volver a mi panel</a>
+        {% else %}
+          <a class="enlace-volver" href="{% url 'inicio' %}"><span aria-hidden="true">←</span> Volver al inicio</a>
+        {% endif %}
+      </nav>
+      {% endif %}
+    {% endblock %}
     {% block content %}{% endblock %}
   </main>
 

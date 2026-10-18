@@ -33,15 +33,25 @@ def inicio(request):
 def registro(request):
     if request.user.is_authenticated:
         return redirect("panel")
-    formulario = RegistroForm(request.POST or None)
+    tipo_inicial = Usuario.Rol.EMPRESA if request.GET.get("tipo") == "empresa" else Usuario.Rol.POSTULANTE
+    formulario = RegistroForm(request.POST or None, initial={"rol": tipo_inicial})
     if request.method == "POST" and formulario.is_valid():
         with transaction.atomic():
             usuario = formulario.save()
-            registrar_perfil(usuario)
+            perfil = registrar_perfil(usuario)
+            if usuario.rol == Usuario.Rol.EMPRESA:
+                perfil.razon_social = formulario.cleaned_data["razon_social"].strip()
+                perfil.ruc = formulario.cleaned_data["ruc"]
+                perfil.ubicacion = formulario.cleaned_data["ubicacion"].strip()
+                perfil.correo_contacto = formulario.cleaned_data["correo_contacto"].strip()
+                perfil.save()
         login(request, usuario)
-        messages.success(request, "Tu cuenta fue creada. Bienvenido a Talenvía.")
+        if usuario.rol == Usuario.Rol.EMPRESA:
+            messages.success(request, "Empresa registrada. Tus datos están pendientes de aprobación administrativa.")
+        else:
+            messages.success(request, "Tu cuenta fue creada. Bienvenido a Talenvía.")
         return redirect("panel")
-    return render(request, "empleo/formulario.html", {"form": formulario, "titulo": "Crear una cuenta", "texto": "El registro no solicita diagnóstico ni certificado médico.", "boton": "Registrarme"})
+    return render(request, "empleo/registro.html", {"form": formulario})
 
 
 @login_required
@@ -142,7 +152,7 @@ def crear_oferta(request):
         formulario.save_m2m()
         messages.success(request, "La oferta se publicó correctamente.")
         return redirect("mis_ofertas")
-    return render(request, "empleo/formulario.html", {"form": formulario, "titulo": "Publicar una oferta accesible", "texto": "Describe los apoyos concretos y las condiciones del puesto.", "boton": "Publicar oferta"})
+    return render(request, "empleo/formulario.html", {"form": formulario, "titulo": "Publicar una oferta accesible", "texto": "Describe los apoyos concretos y las condiciones del puesto.", "boton": "Publicar oferta", "volver": "mis_ofertas", "volver_texto": "Volver a mis ofertas"})
 
 
 @requiere_rol(Usuario.Rol.EMPRESA)
@@ -158,7 +168,7 @@ def editar_oferta(request, pk):
         formulario.save()
         messages.success(request, "Oferta actualizada.")
         return redirect("mis_ofertas")
-    return render(request, "empleo/formulario.html", {"form": formulario, "titulo": "Editar oferta", "boton": "Guardar cambios"})
+    return render(request, "empleo/formulario.html", {"form": formulario, "titulo": "Editar oferta", "boton": "Guardar cambios", "volver": "mis_ofertas", "volver_texto": "Volver a mis ofertas"})
 
 
 @require_POST

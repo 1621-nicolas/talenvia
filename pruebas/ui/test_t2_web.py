@@ -95,6 +95,39 @@ class PruebasWebT2(unittest.TestCase):
         )
         self.captura("FT06_teclado")
 
+    def test_ft07_registro_empresa_y_navegacion(self):
+        self.page.goto(BASE_URL + "/registro/?tipo=empresa")
+        self.page.locator('select[name="rol"]').select_option("EMPRESA")
+        expect(self.page.locator("#datos-empresa")).to_be_visible()
+        self.page.locator('input[name="email"]').fill(
+            "empresa-t2-" + uuid.uuid4().hex[:12] + "@ejemplo.test"
+        )
+        self.page.locator('input[name="razon_social"]').fill("DEMO Inclusión y Tecnología SAC")
+        ruc_aleatorio = str(int(uuid.uuid4().hex, 16) % 1000000000).zfill(9)
+        self.page.locator('input[name="ruc"]').fill("20" + ruc_aleatorio)
+        self.page.locator('input[name="ubicacion"]').fill("Trujillo")
+        self.page.locator('input[name="correo_contacto"]').fill("rrhh@ejemplo.test")
+        self.page.locator('input[name="password1"]').fill("ClaveFuerteTalenvia2026!")
+        self.page.locator('input[name="password2"]').fill("ClaveFuerteTalenvia2026!")
+        self.page.get_by_role("button", name="Registrarme").click()
+        self.page.wait_for_url("**/panel/")
+        expect(self.page.get_by_role("heading", name="Pendiente")).to_be_visible()
+        expect(self.page.get_by_role("link", name="Volver a mi panel")).to_be_visible()
+        self.captura("FT07_empresa_pendiente")
+
+    def test_ft08_interaccion_tipo_cuenta_y_mostrar_contrasena(self):
+        self.page.goto(BASE_URL + "/registro/")
+        self.page.locator('select[name="rol"]').select_option("POSTULANTE")
+        expect(self.page.locator("#datos-empresa")).to_be_hidden()
+        self.page.locator('select[name="rol"]').select_option("EMPRESA")
+        expect(self.page.locator("#datos-empresa")).to_be_visible()
+        self.page.get_by_role("button", name="Mostrar contraseña").first.click()
+        self.assertEqual(self.page.locator('input[name="password1"]').get_attribute("type"), "text")
+        self.page.get_by_role("button", name="Ocultar contraseña").first.click()
+        self.assertEqual(self.page.locator('input[name="password1"]').get_attribute("type"), "password")
+        self.captura("FT08_interaccion_formulario")
+
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

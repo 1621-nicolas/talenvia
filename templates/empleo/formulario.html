@@ -1,5 +1,14 @@
 {% extends 'empleo/base.html' %}
 {% block title %}{{ titulo }} · Talenvía{% endblock %}
+{% block navegacion_regreso %}
+<nav class="volver-navegacion" aria-label="Regresar">
+  {% if volver == 'mis_ofertas' %}
+    <a class="enlace-volver" href="{% url 'mis_ofertas' %}">← {{ volver_texto }}</a>
+  {% else %}
+    <a class="enlace-volver" href="{% url 'panel' %}">← Volver a mi panel</a>
+  {% endif %}
+</nav>
+{% endblock %}
 {% block content %}
 <section class="ancho-formulario">
   <p class="etiqueta">Talenvía · Accesibilidad desde el diseño</p>

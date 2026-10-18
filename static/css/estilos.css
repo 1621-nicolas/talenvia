@@ -263,3 +263,24 @@ fieldset.campo legend{padding:0 .35rem}
   .boton,.tarjeta-oferta{transition:none}
   .boton:hover,.tarjeta-oferta:hover{transform:none}
 }
+
+/* Navegación e interacciones: accesible, responsivo y coherente con ODS 10. */
+.volver-navegacion{margin:0 0 1.4rem}
+.enlace-volver{display:inline-flex;align-items:center;gap:.4rem;min-height:42px;padding:.5rem .8rem;margin-left:-.8rem;border-radius:9px;color:var(--primario);font-size:.93rem;font-weight:750;text-decoration:none}
+.enlace-volver:hover{background:var(--menta);text-decoration:underline}
+.formulario-cuenta{gap:1.15rem}
+.grupo-empresa,.grupo-credenciales{border:1px solid var(--linea);border-radius:14px;padding:1.1rem;display:grid;gap:1rem;min-width:0}
+.grupo-empresa legend,.grupo-credenciales legend{color:var(--tinta);font-weight:750;padding:0 .4rem}
+.grupo-empresa[hidden]{display:none}
+.pasos-registro{display:flex;align-items:center;gap:1rem;color:var(--secundario);font-size:.88rem;margin:1.3rem 0}
+.pasos-registro span span{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:#e4edef;color:#355665;font-weight:800;margin-right:.3rem}
+.pasos-registro .paso-actual{color:var(--primario);font-weight:750}
+.pasos-registro .paso-actual span{background:var(--primario);color:white}
+.pasos-registro .paso-separador{color:var(--secundario)}
+.campo-contrasena{position:relative;display:flex;align-items:center;min-width:0}
+.campo-contrasena input{padding-right:6rem!important}
+.mostrar-contrasena{position:absolute;right:.45rem;border:0;border-radius:8px;background:#e8f4f3;color:var(--primario);padding:.36rem .7rem;font-weight:750;min-height:35px}
+.mostrar-contrasena:hover{background:#d0ebea}
+.pie-formulario{margin:.15rem 0 0;color:var(--secundario);text-align:center}
+.pantalla-registro{max-width:760px}
+@media(max-width:500px){.pasos-registro{gap:.35rem;font-size:.8rem}.grupo-empresa,.grupo-credenciales{padding:.75rem}}
