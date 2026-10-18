@@ -1,7 +1,9 @@
 {% extends 'empleo/base.html' %}
 {% block title %}{{ oferta.titulo }} · Talenvía{% endblock %}
+{% block navegacion_regreso %}
+<nav class="volver-navegacion" aria-label="Regresar"><a class="enlace-volver" href="{% url 'ofertas' %}">← Volver a empleos</a></nav>
+{% endblock %}
 {% block content %}
-<nav aria-label="Volver a las oportunidades"><a class="enlace-flecha" href="{% url 'ofertas' %}">← Volver a empleos</a></nav>
 <article class="detalle">
   <header class="encabezado-pagina" style="margin-top:1.5rem">
     <p class="etiqueta">{{ oferta.empresa.razon_social }}</p>

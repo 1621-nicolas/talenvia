@@ -1,0 +1,60 @@
+{% extends 'empleo/base.html' %}
+{% block title %}Crear una cuenta · Talenvía{% endblock %}
+{% block content %}
+<section class="ancho-formulario pantalla-registro" aria-labelledby="registro-titulo">
+  <p class="etiqueta">TALENVÍA · INCLUSIÓN DESDE EL PRIMER PASO</p>
+  <h1 id="registro-titulo">Crea tu cuenta</h1>
+  <p class="intro">Elige cómo participar. Solo solicitamos los datos necesarios, sin diagnósticos ni certificados médicos.</p>
+  <div class="pasos-registro" aria-label="Proceso de registro">
+    <span class="paso-actual"><span aria-hidden="true">1</span> Crear cuenta</span>
+    <span class="paso-separador" aria-hidden="true">→</span>
+    <span><span aria-hidden="true">2</span> Ir a tu panel</span>
+  </div>
+  <form method="post" class="tarjeta formulario formulario-cuenta" data-registro novalidate>
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+      <div class="errores" role="alert">{{ form.non_field_errors }}</div>
+    {% endif %}
+    <div class="campo">
+      <label for="{{ form.rol.id_for_label }}">{{ form.rol.label }} <span class="requerido">(obligatorio)</span></label>
+      {{ form.rol }}
+      {% if form.rol.errors %}<div class="errores" role="alert">{{ form.rol.errors }}</div>{% endif %}
+      <p class="ayuda" id="mensaje-rol" aria-live="polite">Si representas una empresa, completa su información básica para solicitar la aprobación.</p>
+    </div>
+    <div class="campo">
+      <label for="{{ form.email.id_for_label }}">{{ form.email.label }} <span class="requerido">(obligatorio)</span></label>
+      {{ form.email }}
+      {% if form.email.errors %}<div class="errores" role="alert">{{ form.email.errors }}</div>{% endif %}
+    </div>
+
+    <fieldset id="datos-empresa" class="grupo-empresa">
+      <legend>Información básica de tu empresa</legend>
+      <p class="ayuda">Los cuatro datos son obligatorios si te registras como empresa. Un administrador revisará tu solicitud antes de que puedas publicar ofertas.</p>
+      {% for campo in form %}
+        {% if campo.name == 'razon_social' or campo.name == 'ruc' or campo.name == 'ubicacion' or campo.name == 'correo_contacto' %}
+          <div class="campo">
+            <label for="{{ campo.id_for_label }}">{{ campo.label }} <span class="requerido">(obligatorio para empresas)</span></label>
+            {{ campo }}
+            {% if campo.errors %}<div class="errores" role="alert">{{ campo.errors }}</div>{% endif %}
+          </div>
+        {% endif %}
+      {% endfor %}
+    </fieldset>
+    <fieldset class="grupo-credenciales">
+      <legend>Protege tu cuenta</legend>
+      {% for campo in form %}
+        {% if campo.name == 'password1' or campo.name == 'password2' %}
+          <div class="campo">
+            <label for="{{ campo.id_for_label }}">{{ campo.label }} <span class="requerido">(obligatorio)</span></label>
+            {{ campo }}
+            {% if campo.help_text %}<p class="ayuda">{{ campo.help_text }}</p>{% endif %}
+            {% if campo.errors %}<div class="errores" role="alert">{{ campo.errors }}</div>{% endif %}
+          </div>
+        {% endif %}
+      {% endfor %}
+    </fieldset>
+    <button class="boton" type="submit">Registrarme</button>
+    <p class="pie-formulario">¿Ya tienes cuenta? <a href="{% url 'login' %}">Inicia sesión</a></p>
+  </form>
+</section>
+{% endblock %}

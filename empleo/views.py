@@ -33,7 +33,8 @@ def inicio(request):
 def registro(request):
     if request.user.is_authenticated:
         return redirect("panel")
-    formulario = RegistroForm(request.POST or None)
+    tipo_inicial = Usuario.Rol.EMPRESA if request.GET.get("tipo") == "empresa" else Usuario.Rol.POSTULANTE
+    formulario = RegistroForm(request.POST or None, initial={"rol": tipo_inicial})
     if request.method == "POST" and formulario.is_valid():
         with transaction.atomic():
             usuario = formulario.save()

@@ -4,7 +4,7 @@
 <section class="ancho-formulario">
   <h1>Iniciar sesión</h1>
   <p class="intro">Accede con tu correo electrónico y contraseña.</p>
-  <form method="post" class="tarjeta formulario" novalidate>
+  <form method="post" class="tarjeta formulario formulario-cuenta" novalidate>
     {% csrf_token %}
     {% if form.non_field_errors %}<div class="errores" role="alert">{{ form.non_field_errors }}</div>{% endif %}
     {% for field in form %}
