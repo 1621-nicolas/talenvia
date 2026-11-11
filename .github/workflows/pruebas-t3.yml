@@ -87,7 +87,10 @@ jobs:
           python manage.py runserver --noreload 127.0.0.1:8000 > server.log 2>&1 &
           curl --retry 15 --retry-connrefused --retry-delay 1 -fsS http://127.0.0.1:8000/ -o /dev/null
           mkdir -p resultados/t3
+          python manage.py shell < pruebas/t3/catalogo_qa.py
           status=0
+          k6 run --quiet --summary-export resultados/t3/busquedas-20.json pruebas/t3/busquedas_20.js || status=1
+          python -c "import json; m=json.load(open('resultados/t3/busquedas-20.json'))['metrics']; print('BUSQUEDAS20', m['http_reqs']['count'], m['busqueda_valida_en_2s'], m['http_req_duration']['p(95)'])"
           for perfil in carga escalones pico resistencia; do
             k6 run --quiet -e PERFIL="$perfil" --summary-export "resultados/t3/$perfil.json" pruebas/t3/carga.js || status=1
             python -c "import json; m=json.load(open('resultados/t3/$perfil.json'))['metrics']; print('PERFIL', '$perfil', m['http_reqs']['count'], m['http_req_duration']['p(95)'], m['http_req_failed']['value'], m['checks'])"
