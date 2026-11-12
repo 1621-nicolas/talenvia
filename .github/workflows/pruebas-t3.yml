@@ -1,0 +1,160 @@
+name: T3 - Calidad de Talenvía
+on:
+  pull_request:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+env:
+  DB_ENGINE: sqlite
+  PYTHONUNBUFFERED: "1"
+
+jobs:
+  web:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    strategy:
+      fail-fast: false
+      matrix:
+        motor: [chromium, firefox, webkit]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - uses: actions/setup-node@v4
+        with: {node-version: "22"}
+      - run: |
+          python -m pip install -r requirements-t2.txt
+          python -m playwright install --with-deps ${{ matrix.motor }}
+          npm install --prefix "$RUNNER_TEMP/t3" axe-core@4.10.3
+      - name: Ejecutar recorridos y guardar hallazgos
+        run: |
+          python manage.py migrate --noinput
+          python manage.py sembrar_demo --confirmar
+          python manage.py runserver --noreload 127.0.0.1:8000 > server.log 2>&1 &
+          curl --retry 15 --retry-connrefused --retry-delay 1 -fsS http://127.0.0.1:8000/ -o /dev/null
+          python pruebas/t3/navegador.py --motor ${{ matrix.motor }} --axe "$RUNNER_TEMP/t3/node_modules/axe-core/axe.min.js"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: t3-web-${{ matrix.motor }}
+          path: resultados/t3/
+  auditoria:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - uses: actions/setup-node@v4
+        with: {node-version: "22"}
+      - run: |
+          python -m pip install -r requirements-t2.txt
+          python -m playwright install --with-deps chromium
+          npm install --prefix "$RUNNER_TEMP/t3" lighthouse@12.8.2
+          python manage.py migrate --noinput
+          python manage.py sembrar_demo --confirmar
+          python manage.py runserver --noreload 127.0.0.1:8000 > server.log 2>&1 &
+          curl --retry 15 --retry-connrefused --retry-delay 1 -fsS http://127.0.0.1:8000/ -o /dev/null
+          mkdir -p resultados/t3/lighthouse
+          for ruta in inicio ofertas registro ingresar; do
+            path="/$ruta/"
+            [ "$ruta" != inicio ] || path=/
+            "$RUNNER_TEMP/t3/node_modules/.bin/lighthouse" "http://127.0.0.1:8000$path" --only-categories=accessibility --chrome-flags="--headless --no-sandbox" --output=json --output-path="resultados/t3/lighthouse/$ruta.json" --quiet
+            python -c "import json; d=json.load(open('resultados/t3/lighthouse/$ruta.json')); assert not d.get('runtimeError'); print('LIGHTHOUSE', '$ruta', d['categories']['accessibility']['score'], [(k,v.get('score')) for k,v in d['audits'].items() if v.get('score')==0])"
+          done
+          xvfb-run -a python pruebas/t3/zoom.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: t3-lighthouse-zoom
+          path: resultados/t3/
+  carga:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - uses: grafana/setup-k6-action@v1
+      - run: |
+          python -m pip install -r requirements.txt
+          python manage.py migrate --noinput
+          python manage.py sembrar_demo --confirmar
+          python manage.py runserver --noreload 127.0.0.1:8000 > server.log 2>&1 &
+          curl --retry 15 --retry-connrefused --retry-delay 1 -fsS http://127.0.0.1:8000/ -o /dev/null
+          mkdir -p resultados/t3
+          python manage.py shell < pruebas/t3/catalogo_qa.py
+          status=0
+          k6 run --quiet --summary-export resultados/t3/busquedas-20.json pruebas/t3/busquedas_20.js || status=1
+          python -c "import json; m=json.load(open('resultados/t3/busquedas-20.json'))['metrics']; print('BUSQUEDAS20', m['http_reqs']['count'], m['busqueda_valida_en_2s'], m['http_req_duration']['p(95)'])"
+          for perfil in carga escalones pico resistencia; do
+            k6 run --quiet -e PERFIL="$perfil" --summary-export "resultados/t3/$perfil.json" pruebas/t3/carga.js || status=1
+            python -c "import json; m=json.load(open('resultados/t3/$perfil.json'))['metrics']; print('PERFIL', '$perfil', m['http_reqs']['count'], m['http_req_duration']['p(95)'], m['http_req_failed']['value'], m['checks'])"
+          done
+          exit "$status"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: t3-k6
+          path: resultados/t3/
+  sqlserver:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    services:
+      sql:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          ACCEPT_EULA: Y
+          MSSQL_PID: Developer
+          MSSQL_SA_PASSWORD: "T3_Ephemeral!LocalOnly918"
+        ports: ["1433:1433"]
+    env:
+      DB_ENGINE: sqlserver
+      DB_HOST: 127.0.0.1
+      DB_PORT: "1433"
+      DB_AUTH: sqlserver
+      DB_USER: sa
+      DB_PASSWORD: "T3_Ephemeral!LocalOnly918"
+      DB_NAME: TalenviaT3QA
+      DB_TRUST_SERVER_CERTIFICATE: "true"
+      DJANGO_DEBUG: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - name: Preparar motor efímero y dependencias
+        run: |
+          python -m pip install -r requirements.txt
+          if ! odbcinst -q -d | grep -q 'ODBC Driver 18'; then
+            curl -fsSLo "$RUNNER_TEMP/msprod.deb" https://packages.microsoft.com/config/ubuntu/24.04/packages-microsoft-prod.deb
+            sudo dpkg -i "$RUNNER_TEMP/msprod.deb"
+            sudo apt-get update -qq
+            sudo ACCEPT_EULA=Y apt-get install -y msodbcsql18
+          fi
+          python - <<'PY'
+          import os, time, pyodbc
+          for i in range(30):
+              try:
+                  db = pyodbc.connect("DRIVER={ODBC Driver 18 for SQL Server};SERVER=127.0.0.1,1433;UID=sa;PWD=" + os.environ["DB_PASSWORD"] + ";TrustServerCertificate=yes", timeout=2, autocommit=True)
+                  break
+              except pyodbc.Error:
+                  if i == 29: raise
+                  time.sleep(2)
+          print(db.execute("SELECT @@VERSION").fetchone()[0])
+          db.execute("CREATE DATABASE TalenviaT3QA")
+          db.close()
+          PY
+      - name: Ejecutar dos transacciones independientes
+        run: |
+          mkdir -p resultados/t3
+          set -o pipefail
+          python manage.py test pruebas.t3.test_sqlserver --verbosity 2 --noinput 2>&1 | tee resultados/t3/sqlserver.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: t3-sqlserver
+          path: resultados/t3/
